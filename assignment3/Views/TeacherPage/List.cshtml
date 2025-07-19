@@ -1,0 +1,32 @@
+﻿@model List<assignment3.Models.Teacher>
+@{
+    ViewData["Title"] = "Teacher List";
+}
+<h2>Teacher List</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Employee #</th>
+            <th>Hire Date</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.TeacherId</td>
+                <td>
+                    <a href="@Url.Action("Show", "TeacherPage", new { id = t.TeacherId })">
+                        @t.TeacherFName @t.TeacherLName
+                    </a>
+                </td>
+                <td>@t.EmployeeNumber</td>
+                <td>@t.HireDate.ToShortDateString()</td>
+                <td>@t.Salary</td>
+            </tr>
+        }
+    </tbody>
+</table>

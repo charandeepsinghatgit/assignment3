@@ -1,0 +1,12 @@
+﻿@model assignment3.Models.Teacher
+@{
+    ViewData["Title"] = "Teacher Details";
+}
+<h2>Teacher Details</h2>
+<ul>
+    <li><strong>ID:</strong> @Model.TeacherId</li>
+    <li><strong>Name:</strong> @Model.TeacherFName @Model.TeacherLName</li>
+    <li><strong>Employee Number:</strong> @Model.EmployeeNumber</li>
+    <li><strong>Hire Date:</strong> @Model.HireDate.ToShortDateString()</li>
+    <li><strong>Salary:</strong> @Model.Salary</li>
+</ul>
