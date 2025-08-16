@@ -4,31 +4,20 @@ using MySql.Data.MySqlClient;
 
 namespace assignment3.Controllers
 {
-    // This is an MVC Controller for rendering web pages (not an API controller!)
     public class TeacherPageController : Controller
     {
-        // Instantiate the SchoolDbContext for database connection
         private readonly SchoolDbContext _school = new SchoolDbContext();
 
-        // ACTION: List all teachers and show them in a web page
-        // URL: /TeacherPage/List
+        // List
         public IActionResult List()
         {
-            // Create a list to hold all teachers fetched from the database
             var teachers = new List<Teacher>();
-
-            // Open the database connection
             using (MySqlConnection conn = _school.AccessDatabase())
             {
                 conn.Open();
-                var cmd = conn.CreateCommand();
-                // SQL command to select all rows from the teachers table
-                cmd.CommandText = "SELECT * FROM teachers";
-
-                // Execute the query and get the results
+                var cmd = conn.CreateCommand(); cmd.CommandText = "SELECT * FROM teachers";
                 using (var reader = cmd.ExecuteReader())
                 {
-                    // Loop through each result and create a Teacher object
                     while (reader.Read())
                     {
                         teachers.Add(new Teacher
@@ -43,25 +32,19 @@ namespace assignment3.Controllers
                     }
                 }
             }
-            // Pass the list of teachers to the List view (Views/TeacherPage/List.cshtml)
             return View(teachers);
         }
 
-        // ACTION: Show details for a single teacher
-        // URL: /TeacherPage/Show/(id)
+        //Show single teacher
         public IActionResult Show(int id)
         {
             Teacher teacher = null;
-
-            // Open the database connection
             using (MySqlConnection conn = _school.AccessDatabase())
             {
                 conn.Open();
                 var cmd = conn.CreateCommand();
                 cmd.CommandText = "SELECT * FROM teachers WHERE teacherid = @id";
                 cmd.Parameters.AddWithValue("@id", id);
-
-                // Execute the query and read the result (should be only one row)
                 using (var reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -77,6 +60,79 @@ namespace assignment3.Controllers
                         };
                     }
                 }
+            }
+            if (teacher == null) return NotFound();
+            return View(teacher);
+        }
+
+        // GET: /TeacherPage/Edit/5
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            Teacher teacher = null;
+            using (MySqlConnection conn = _school.AccessDatabase())
+            {
+                conn.Open();
+                var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT * FROM teachers WHERE teacherid=@id";
+                cmd.Parameters.AddWithValue("@id", id); using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        teacher = new Teacher
+                        {
+                            TeacherId = Convert.ToInt32(reader["teacherid"]),
+                            TeacherFName = reader["teacherfname"].ToString(),
+                            TeacherLName = reader["teacherlname"].ToString(),
+                            EmployeeNumber = reader["employeenumber"].ToString(),
+                            HireDate = Convert.ToDateTime(reader["hiredate"]),
+                            Salary = Convert.ToDecimal(reader["salary"])
+                        };
+                    }
+                }
+            }
+
+            if (teacher == null) return NotFound();
+            return View(teacher); // sends model to Edit.cshtml
+        }
+
+        // POST: /TeacherPage/Update/5
+        [HttpPost]
+        public IActionResult Update(int id, Teacher updatedTeacher)
+        {
+            try
+            {
+                using (MySqlConnection conn = _school.AccessDatabase())
+                {
+                    conn.Open();
+                    var cmd = conn.CreateCommand();
+                    cmd.CommandText = @"UPDATE teachers 
+                                        SET teacherfname=@fname, 
+                                            teacherlname=@lname,
+                                            employeenumber=@empnum,
+                                            hiredate=@hiredate,
+                                            salary=@salary
+                                        WHERE teacherid=@id";
+                    cmd.Parameters.AddWithValue("@fname", updatedTeacher.TeacherFName);
+                    cmd.Parameters.AddWithValue("@lname", updatedTeacher.TeacherLName);
+                    cmd.Parameters.AddWithValue("@empnum", updatedTeacher.EmployeeNumber);
+                    cmd.Parameters.AddWithValue("@hiredate", updatedTeacher.HireDate);
+                    cmd.Parameters.AddWithValue("@salary", updatedTeacher.Salary);
+                    cmd.Parameters.AddWithValue("@id", id);
+
+                    int rows = cmd.ExecuteNonQuery();
+                    if (rows == 0)
+                    {
+                        ViewBag.ErrorMessage = "Teacher not found.";
+                        return View("Edit", updatedTeacher);
+                    }
+                }
+                return RedirectToAction("Show", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Error updating teacher: " + ex.Message;
+                return View("Edit", updatedTeacher);
             }
         }
     }

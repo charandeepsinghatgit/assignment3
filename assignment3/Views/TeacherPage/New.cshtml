@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "Add a New Teacher";
+}
+
+<h2>Add a New Teacher</h2>
+
+<form id="addTeacherForm">
+    <div>
+        <label for="TeacherFName">First Name:</label>
+        <input type="text" name="TeacherFName" id="TeacherFName" required />
+    </div>
+    <div>
+        <label for="TeacherLName">Last Name:</label>
+        <input type="text" name="TeacherLName" id="TeacherLName" required />
+    </div>
+    <div>
+        <label for="EmployeeNumber">Employee Number:</label>
+        <input type="text" name="EmployeeNumber" id="EmployeeNumber" required />
+    </div>
+    <div>
+        <label for="HireDate">Hire Date:</label>
+        <input type="date" name="HireDate" id="HireDate" required />
+    </div>
+    <div>
+        <label for="Salary">Salary:</label>
+        <input type="number" name="Salary" id="Salary" required />
+    </div>
+    <div>
+        <input type="submit" value="Add Teacher" />
+    </div>
+</form>
+
+<div id="result"></div>
+
+@section Scripts {
+    <script>
+        document.getElementById("addTeacherForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const teacherData = {
+                TeacherFName: document.getElementById("TeacherFName").value,
+                TeacherLName: document.getElementById("TeacherLName").value,
+                EmployeeNumber: document.getElementById("EmployeeNumber").value,
+                HireDate: document.getElementById("HireDate").value,
+                Salary: parseFloat(document.getElementById("Salary").value)
+            };
+
+            fetch("/api/teacher/addTeacher", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(teacherData)
+            })
+            .then(response => {
+                if (response.ok) return response.text();
+                return response.text().then(err => { throw new Error(err); });
+            })
+            .then(data => {
+                document.getElementById("result").innerText = data;
+                document.getElementById("addTeacherForm").reset();
+            })
+            .catch(error => {
+                document.getElementById("result").innerText = "Error: " + error.message;
+            });
+        });
+    </script>
+}
