@@ -58,7 +58,6 @@ namespace assignment3.Controllers
             {
                 conn.Open();
                 var cmd = conn.CreateCommand();
-                // SQL command to select a teacher with a specific ID
                 cmd.CommandText = "SELECT * FROM teachers WHERE teacherid = @id";
                 cmd.Parameters.AddWithValue("@id", id);
 
